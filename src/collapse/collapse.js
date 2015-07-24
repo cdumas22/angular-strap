@@ -9,6 +9,7 @@ angular.module('mgcrea.ngStrap.collapse', [])
       disallowToggle: false,
       activeClass: 'in',
       startCollapsed: false,
+      startOpen: false,
       allowMultiple: false
     };
 
@@ -17,13 +18,13 @@ angular.module('mgcrea.ngStrap.collapse', [])
 
       // Attributes options
       self.$options = angular.copy(defaults);
-      angular.forEach(['animation', 'disallowToggle', 'activeClass', 'startCollapsed', 'allowMultiple'], function (key) {
+      angular.forEach(['animation', 'disallowToggle', 'activeClass', 'startCollapsed', 'allowMultiple', 'startOpen'], function (key) {
         if(angular.isDefined($attrs[key])) self.$options[key] = $attrs[key];
       });
 
       // use string regex match boolean attr falsy values, leave truthy values be
       var falseValueRegExp = /^(false|0|)$/i;
-      angular.forEach(['disallowToggle', 'startCollapsed', 'allowMultiple'], function(key) {
+      angular.forEach(['disallowToggle', 'startCollapsed', 'allowMultiple', 'startOpen'], function(key) {
         if(angular.isDefined($attrs[key]) && falseValueRegExp.test($attrs[key])) {
           self.$options[key] = false;
         }
@@ -247,10 +248,19 @@ angular.module('mgcrea.ngStrap.collapse', [])
           bsCollapseCtrl.$unregisterTarget(element);
         });
 
-        function render() {
+        function render(allOpen) {
           var index = bsCollapseCtrl.$targets.indexOf(element);
           var active = bsCollapseCtrl.$activeIndexes();
           var action = 'removeClass';
+          
+          if (allOpen) {
+              if (angular.isArray(active)) {
+                  active.push(index);
+              } else {
+                  active = index;
+              }
+          }
+            
           if (angular.isArray(active)) {
             if (active.indexOf(index) !== -1) {
               action = 'addClass';
@@ -266,7 +276,7 @@ angular.module('mgcrea.ngStrap.collapse', [])
         bsCollapseCtrl.$viewChangeListeners.push(function() {
           render();
         });
-        render();
+        render(bsCollapseCtrl.$options.allOpen);
 
       }
     };
